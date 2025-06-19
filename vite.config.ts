@@ -8,10 +8,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  // build: {
-  //   rollupOptions: {
-  //     external: ['@recurly/recurly-js']
-  //   }
-  // },
+  build: {
+    rollupOptions: {
+      external: ['@recurly/recurly-js'],
+      output: {
+        globals: {
+          '@recurly/recurly-js': 'recurly'
+        }
+      }
+
+    }
+  },
   base: "/apple-pay-demo/"
 })
