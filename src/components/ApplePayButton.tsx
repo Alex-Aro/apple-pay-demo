@@ -1,58 +1,49 @@
 import { useRecurly } from '@recurly/react-recurly'
-import type { ApplePayInstance, CheckoutPricingInstance, SubscriptionPricingState } from '@recurly/recurly-js'
+import type { ApplePayInstance } from '@recurly/recurly-js'
+// import type { ApplePayInstance, CheckoutPricingInstance, SubscriptionPricingState } from '@recurly/recurly-js'
 import * as React from 'react'
 
 export const ApplePayButton: React.FC = () => {
     const recurly = useRecurly()
-    const [subscriptionPricingState, setSubscriptionPricingState] = React.useState<SubscriptionPricingState>()
-    const [checkoutPricing, setCheckoutPricing] = React.useState<CheckoutPricingInstance>()
+    // const [subscriptionPricingState, setSubscriptionPricingState] = React.useState<SubscriptionPricingState>()
+    // const [checkoutPricing, setCheckoutPricing] = React.useState<CheckoutPricingInstance>()
     const [applePay, setApplePay] = React.useState<ApplePayInstance>()
 
     React.useEffect(() => {
         if (!recurly)
             return
         
-        const _pricing = recurly.Pricing.Subscription()
-        _pricing
-            .plan('annual-99')
-            .addon('n-aro5-001', { quantity: 1 })
-            .currency('USD')
-            .done((state) => {
-                console.log('Subscription Pricing: ', _pricing)
-                console.log('Subscription Pricing State: ', state)
-                setSubscriptionPricingState(state)
-            })
-    }, [recurly])
-
-    React.useEffect(() => {
-        if (!recurly || !subscriptionPricingState)
-            return
-        
         const _checkoutPricing = recurly.Pricing.Checkout()
         _checkoutPricing
-            .subscription(subscriptionPricingState)
+            .adjustment({
+                id: '0',
+                itemCode: 'n-aro5-001',
+                quantity: 1
+            })
+            .subscription(recurly.Pricing.Subscription()
+                .plan('annual-99')
+                .addon('n-aro5-001', { quantity: 1 })
+                .done()
+            )
             .done(() => {
                 console.log("Checkout Pricing: ", _checkoutPricing)
-                setCheckoutPricing(_checkoutPricing)
+                // setCheckoutPricing(_checkoutPricing)
             })
-    }, [recurly, subscriptionPricingState])
-    
-    React.useEffect(() => {
-        if (!checkoutPricing || !recurly)
-            return
+           
+        // if (!checkoutPricing)
+        //     return
 
         const _applePay = recurly.ApplePay({
             country: 'US',
             currency: 'USD',
-            pricing: checkoutPricing,
+            pricing: _checkoutPricing,
             label: 'Reclaimwell by Aro',
         })
 
         _applePay.ready(() => {
             setApplePay(_applePay)
         })
-    }, [recurly, checkoutPricing])
-           
+    }, [recurly])
 
     const handleApplePay = () => {
         if (!recurly || !applePay)
