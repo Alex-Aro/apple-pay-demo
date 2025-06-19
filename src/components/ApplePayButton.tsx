@@ -31,8 +31,12 @@ export const ApplePayButton: React.FC = () => {
             .subscription(subscriptionPricingState)
             .done(() => {
                 console.log("Checkout Pricing: ", _checkoutPricing)
+                setCheckoutPricing(_checkoutPricing)
             })
-            
+           
+        if (!checkoutPricing)
+            return
+
         const _applePay = recurly.ApplePay({
             country: 'US',
             currency: 'USD',
