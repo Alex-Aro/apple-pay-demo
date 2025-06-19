@@ -1,10 +1,12 @@
 import { useRecurly } from '@recurly/react-recurly'
-import type { CheckoutPricingInstance } from '@recurly/recurly-js'
+import { type ApplePayInstance, type CheckoutPricingInstance, type SubscriptionPricingState } from '@recurly/recurly-js'
 import * as React from 'react'
 
 export const ApplePayButton: React.FC = () => {
     const recurly = useRecurly()
-    const [pricing, setPricing] = React.useState<CheckoutPricingInstance>()
+    const [subscriptionPricingState, setSubscriptionPricingState] = React.useState<SubscriptionPricingState>()
+    const [checkoutPricing, setCheckoutPricing] = React.useState<CheckoutPricingInstance>()
+    const [applePay, setApplePay] = React.useState<ApplePayInstance>()
 
     React.useEffect(() => {
         if (!recurly)
@@ -15,27 +17,40 @@ export const ApplePayButton: React.FC = () => {
             .plan('annual-99')
             .addon('n-aro5-001', { quantity: 1 })
             .currency('USD')
-            .done(() => console.log('Pricing: ', _pricing))
+            .done((state) => {
+                console.log('Subscription Pricing: ', _pricing)
+                console.log('Subscription Pricing State: ', state)
+                setSubscriptionPricingState(state)
+            })
+       
+        if (!subscriptionPricingState)
+            return
         
-            setPricing(pricing)
-    }, [recurly, pricing])
+        const _checkoutPricing = recurly.Pricing.Checkout()
+        _checkoutPricing
+            .subscription(subscriptionPricingState)
+            .done(() => {
+                console.log("Checkout Pricing: ", _checkoutPricing)
+            })
+            
+        const _applePay = recurly.ApplePay({
+            country: 'US',
+            currency: 'USD',
+            pricing: checkoutPricing,
+            label: 'Reclaimwell by Aro',
+        })
+
+        _applePay.ready(() => {
+            setApplePay(_applePay)
+        })
+    }, [recurly, checkoutPricing, subscriptionPricingState])
 
     const handleApplePay = () => {
-        if (!recurly)
+        if (!recurly || !applePay)
             return
 
         try {
-            const applePay = recurly.ApplePay({
-                country: 'US',
-                currency: 'USD',
-                pricing: pricing,
-                label: 'Reclaimwell by Aro',
-            })
-
-            applePay.ready(() => {
-                applePay.begin()
-            })
-
+            applePay.begin()
         } catch (err) {
             console.log(err)
         }
