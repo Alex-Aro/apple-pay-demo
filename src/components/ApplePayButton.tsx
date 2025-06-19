@@ -1,5 +1,5 @@
 import { useRecurly } from '@recurly/react-recurly'
-import type { CheckoutPricing, CheckoutPricingInstance } from '@recurly/recurly-js'
+import type { CheckoutPricingInstance } from '@recurly/recurly-js'
 import * as React from 'react'
 
 export const ApplePayButton: React.FC = () => {
