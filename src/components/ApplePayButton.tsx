@@ -11,7 +11,7 @@ export const ApplePayButton: React.FC = () => {
     React.useEffect(() => {
         if (!recurly)
             return
-
+        
         const _pricing = recurly.Pricing.Subscription()
         _pricing
             .plan('annual-99')
@@ -22,8 +22,10 @@ export const ApplePayButton: React.FC = () => {
                 console.log('Subscription Pricing State: ', state)
                 setSubscriptionPricingState(state)
             })
-       
-        if (!subscriptionPricingState)
+    }, [recurly])
+
+    React.useEffect(() => {
+        if (!recurly || !subscriptionPricingState)
             return
         
         const _checkoutPricing = recurly.Pricing.Checkout()
@@ -33,8 +35,10 @@ export const ApplePayButton: React.FC = () => {
                 console.log("Checkout Pricing: ", _checkoutPricing)
                 setCheckoutPricing(_checkoutPricing)
             })
-           
-        if (!checkoutPricing)
+    }, [recurly, subscriptionPricingState])
+    
+    React.useEffect(() => {
+        if (!checkoutPricing || !recurly)
             return
 
         const _applePay = recurly.ApplePay({
@@ -47,7 +51,8 @@ export const ApplePayButton: React.FC = () => {
         _applePay.ready(() => {
             setApplePay(_applePay)
         })
-    }, [recurly, checkoutPricing, subscriptionPricingState])
+    }, [recurly, checkoutPricing])
+           
 
     const handleApplePay = () => {
         if (!recurly || !applePay)
