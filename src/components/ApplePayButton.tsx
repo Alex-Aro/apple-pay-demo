@@ -10,7 +10,7 @@ export const ApplePayButton: React.FC = () => {
     const [applePay, setApplePay] = React.useState<ApplePayInstance>()
 
     React.useEffect(() => {
-        if (!recurly)
+        if (!recurly || applePay)
             return
         
         const _checkoutPricing = recurly.Pricing.Checkout()
@@ -43,7 +43,7 @@ export const ApplePayButton: React.FC = () => {
         _applePay.ready(() => {
             setApplePay(_applePay)
         })
-    }, [recurly])
+    }, [applePay])
 
     const handleApplePay = () => {
         if (!recurly || !applePay)
